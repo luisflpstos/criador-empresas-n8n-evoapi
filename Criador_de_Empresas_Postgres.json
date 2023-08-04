@@ -1,0 +1,556 @@
+{
+  "name": "Criador de Empresas Novo",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "criadorchatwoot",
+        "options": {}
+      },
+      "id": "e0d34752-1894-4bd4-a31e-c6d9eb8a8e96",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [-1300, 680],
+      "webhookId": "1787129a-b4a8-4b75-9d60-e8ea4816563e"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Info Base').item.json[\"UrlChatwoot\"] }}/platform/api/v1/accounts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Info Base').item.json[\"api_access_token\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.NomeEmpresa }}"
+            },
+            {
+              "name": "locale",
+              "value": "pt_BR"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "20dc8eab-abdf-4177-9548-9b05d178b91b",
+      "name": "Cria Conta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [-360, 680]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Info Base').item.json[\"UrlChatwoot\"] }}/platform/api/v1/users",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Info Base').item.json[\"api_access_token\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $('Info Base').item.json.nomeAdministrador }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $('Info Base').item.json[\"email\"] }}"
+            },
+            {
+              "name": "password",
+              "value": "={{ $('Info Base').item.json[\"password\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9879a08b-d9eb-4b68-b9f3-3b585af9fee4",
+      "name": "Cria Usuario",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [40, 680]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Info Base').item.json[\"UrlChatwoot\"] }}/platform/api/v1/accounts/{{ $node[\"Cria Conta\"].json[\"id\"] }}/account_users",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "={{ $('Info Base').item.json[\"api_access_token\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_id",
+              "value": "={{ $node[\"Cria Usuario\"].json[\"id\"] }}"
+            },
+            {
+              "name": "role",
+              "value": "administrator"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6c247ea8-8fb4-4f08-a4c4-f6aa8bfbdff6",
+      "name": "Add Usuario a Conta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [240, 680]
+    },
+    {
+      "parameters": {
+        "fromEmail": "SEU EMAIL",
+        "toEmail": "={{ $('LimpaDados').item.json.email }}",
+        "subject": "Bem vindo ao NOME EMPRESA",
+        "text": "=\n\nOlá {{ $('Info Base').item.json.nomeAdministrador }},\nSeja bem vindo(a) ao sistema de atendimento do Whatsapp.\n\nSegue abaixo seus dados para acesso:\n\nURL: {{ $('Info Base').item.json[\"UrlChatwoot\"] }}\nLogin: {{ $('LimpaDados').item.json[\"email\"] }}\nSenha: {{ $('Senha Dinamica').item.json[\"senha\"] }}\n\nA senha é temporária, assim que acessar você deve trocar imediatamente por uma senha segura.",
+        "options": {}
+      },
+      "id": "86ccaa54-1360-4336-a8e4-2db4717fbc2b",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [620, 680],
+      "credentials": {
+        "smtp": {
+          "id": "UOAr1bcXKvAlKrtj",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "api_access_token",
+              "value": "ACCES TOKEN"
+            },
+            {
+              "name": "nome",
+              "value": "={{ $('Webhook').item.json.body['Nome Completo'] }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $('Webhook').item.json.body.Email }}"
+            },
+            {
+              "name": "password",
+              "value": "={{ $json[\"senha\"] }}"
+            },
+            {
+              "name": "UrlChatwoot",
+              "value": "URL CHATWOOT"
+            },
+            {
+              "name": "NomeEmpresa",
+              "value": "={{ $json.NomeEmpresa }}"
+            },
+            {
+              "name": "UrlEvolution",
+              "value": "URL DA API"
+            },
+            {
+              "name": "agents",
+              "value": "={{ $('Webhook').item.json.body.Vendedores }}"
+            },
+            {
+              "name": "inboxes",
+              "value": "={{ $('Webhook').item.json.body.Números }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1b36aa63-df56-4ea7-9134-3aa48e1a3d43",
+      "name": "Info Base",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [-540, 680]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "nomeAdministrador",
+              "value": "={{ $json.body['Nome Completo'] }}"
+            },
+            {
+              "name": "NomeEmpresa",
+              "value": "={{ $json.body.Empresa }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json.body.Email }}"
+            },
+            {
+              "name": "agents",
+              "value": "={{ $json.body.Vendedores }}"
+            },
+            {
+              "name": "inboxes",
+              "value": "={{ $json.body.Números }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2482f46f-ee45-4b09-a2d2-9be28d699040",
+      "name": "LimpaDados",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [-1080, 680]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Info Base').item.json.UrlEvolution }}/instance/create",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "SUA KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"instanceName\": \"{{ $json.id }}NOME DA EMPRESA\",\n    \"token\": \"\",\n    \"qrcode\": true,\n    \"chatwoot_account_id\": {{ $('Cria Conta').item.json[\"id\"] }},\n    \"chatwoot_token\": \"{{ $('Cria Usuario').item.json[\"access_token\"] }}\",\n    \"chatwoot_url\": \"{{ $('Info Base').item.json[\"UrlChatwoot\"] }}\",\n    \"chatwoot_sign_msg\": true,\n    \"chatwoot_reopen_conversation\": true,\n    \"chatwoot_conversation_pending\": false,\n    \"groups_ignore\": true,\n    \"always_online\": true,\n    \"read_messages\": true,\n    \"read_status\": true\n} ",
+        "options": {}
+      },
+      "id": "cb6f05e8-4e23-49ba-9ba6-5304eb511d17",
+      "name": "Cria API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [440, 680]
+    },
+    {
+      "parameters": {
+        "action": "generate",
+        "encodingType": "hex",
+        "stringLength": 10
+      },
+      "id": "565c9577-0994-4bf0-b38a-4f60ad67587e",
+      "name": "Crypto",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [-900, 680]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "senha",
+              "value": "={{ $json.data.replace(/.{10}/g, \"NOME DA EMPRESA$&@\") }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0654f817-a99f-4266-a9ca-e436cb78dcad",
+      "name": "Senha Dinamica",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [-720, 680]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "accounts",
+          "mode": "list",
+          "cachedResultName": "accounts"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "name": "={{ $json.name }}",
+            "created_at": "2023-06-01T03:00:00.000Z",
+            "updated_at": "2024-06-30T03:00:00.000Z",
+            "limits": "={\"agents\": \"{{ $('Info Base').item.json.agents }}\", \"inboxes\": \"{{ $('Info Base').item.json.inboxes }}\"}"
+          },
+          "matchingColumns": ["id"],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "locale",
+              "displayName": "locale",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "domain",
+              "displayName": "domain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "support_email",
+              "displayName": "support_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "feature_flags",
+              "displayName": "feature_flags",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "auto_resolve_duration",
+              "displayName": "auto_resolve_duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "limits",
+              "displayName": "limits",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "custom_attributes",
+              "displayName": "custom_attributes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d309ef99-0925-40b8-880e-e8160645bb1a",
+      "name": "Postgres1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.2,
+      "position": [-160, 680],
+      "credentials": {
+        "postgres": {
+          "id": "WkewmzTqFwlMEmRI",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "LimpaDados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cria Conta": {
+      "main": [
+        [
+          {
+            "node": "Postgres1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cria Usuario": {
+      "main": [
+        [
+          {
+            "node": "Add Usuario a Conta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Usuario a Conta": {
+      "main": [
+        [
+          {
+            "node": "Cria API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Info Base": {
+      "main": [
+        [
+          {
+            "node": "Cria Conta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cria API": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crypto": {
+      "main": [
+        [
+          {
+            "node": "Senha Dinamica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LimpaDados": {
+      "main": [
+        [
+          {
+            "node": "Crypto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Senha Dinamica": {
+      "main": [
+        [
+          {
+            "node": "Info Base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres1": {
+      "main": [
+        [
+          {
+            "node": "Cria Usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b86da188-d224-4aea-ad28-799db4d49cc8",
+  "id": "kEyIZdcQfH0g7jpz",
+  "meta": {
+    "instanceId": "e97fc8e56e781e036d68e8747c1cbff271e9968c1742fa28c56eabb692bad6a1"
+  },
+  "tags": []
+}
